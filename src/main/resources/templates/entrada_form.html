@@ -1,0 +1,110 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Entrada</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      /* CONTENEDOR CENTRADO */
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 60px);
+        background: #f5f6fa;
+      }
+
+      /* TARJETA */
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 350px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      /* BOTONES */
+      .btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 15px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-guardar {
+        background: #27ae60;
+        color: white;
+      }
+
+      .btn-guardar:hover {
+        background: #219150;
+      }
+
+      .btn-volver {
+        background: #95a5a6;
+        color: white;
+      }
+
+      .btn-volver:hover {
+        background: #7f8c8d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="wrapper">
+      <div class="card">
+        <h2>Registrar entrada</h2>
+
+        <form th:action="@{/movimiento/guardarEntrada}" method="post">
+          <label>Producto / Proveedor</label>
+          <select name="productoProveedorId" required>
+            <option value="">Selecciona...</option>
+            <option
+              th:each="pp : ${productos}"
+              th:value="${pp.id}"
+              th:text="${pp.producto.nombre + ' - ' + pp.proveedor.nombre}"
+            ></option>
+          </select>
+
+          <label>Cantidad</label>
+          <input type="number" name="cantidad" required />
+
+          <button type="submit" class="btn btn-guardar">Guardar</button>
+
+          <a href="/inventario">
+            <button type="button" class="btn btn-volver">⬅ Volver</button>
+          </a>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

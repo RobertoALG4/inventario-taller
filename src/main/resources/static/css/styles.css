@@ -1,0 +1,55 @@
+/* 🔥 NAVBAR */
+.navbar {
+  background: #2c3e50;
+  padding: 12px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* IZQUIERDA */
+.nav-left a {
+  color: white;
+  margin-right: 20px;
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 3px;
+}
+
+/* HOVER con línea animada */
+.nav-left a::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background: #1abc9c;
+  left: 0;
+  bottom: 0;
+  transition: 0.3s;
+}
+
+.nav-left a:hover::after {
+  width: 100%;
+}
+
+/* BOTÓN LOGOUT */
+.nav-right form {
+  margin: 0;
+}
+
+.logout-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #e74c3c;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}

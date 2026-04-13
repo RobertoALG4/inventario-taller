@@ -1,0 +1,136 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Producto en Inventario</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      /* CONTENEDOR CENTRADO */
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: calc(100vh - 60px);
+        background: #f5f6fa;
+      }
+
+      /* TARJETA */
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      /* BOTONES */
+      .btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 15px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-guardar {
+        background: #27ae60;
+        color: white;
+      }
+
+      .btn-guardar:hover {
+        background: #219150;
+      }
+
+      .btn-volver {
+        background: #95a5a6;
+        color: white;
+      }
+
+      .btn-volver:hover {
+        background: #7f8c8d;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="wrapper">
+      <div class="card">
+        <h2
+          th:text="${nombreProducto != null} ? 'Editar producto' : 'Nuevo producto en inventario'"
+        ></h2>
+
+        <form th:action="@{/inventario/guardar}" method="post">
+          <label>Producto:</label>
+          <input
+            type="text"
+            name="nombreProducto"
+            th:value="${nombreProducto}"
+            required
+          />
+
+          <label>Proveedor:</label>
+          <input
+            type="text"
+            name="nombreProveedor"
+            th:value="${nombreProveedor}"
+            required
+          />
+
+          <label>Precio unitario de compra:</label>
+          <input
+            type="number"
+            step="0.01"
+            name="precioCompra"
+            th:value="${precioCompra}"
+            required
+          />
+
+          <label>Porcentaje que se le añade (%):</label>
+          <input
+            type="number"
+            step="0.01"
+            name="porcentajeGanancia"
+            th:value="${porcentajeGanancia}"
+            required
+          />
+
+          <label>Stock:</label>
+          <input type="number" name="stock" th:value="${stock}" required />
+
+          <button type="submit" class="btn btn-guardar">Guardar</button>
+
+          <a href="/inventario">
+            <button type="button" class="btn btn-volver">⬅ Volver</button>
+          </a>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

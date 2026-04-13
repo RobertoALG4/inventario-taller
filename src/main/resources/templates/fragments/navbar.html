@@ -1,0 +1,28 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <body>
+    <div th:fragment="navbar" class="navbar">
+      <!-- IZQUIERDA -->
+      <div class="nav-left">
+        <span sec:authorize="hasRole('OFICINA')">
+          <a href="/inventario">Inventario</a>
+          <a href="/movimiento/entrada">Entradas</a>
+          <a href="/movimiento/salida">Salidas</a>
+          <a href="/historial">Historial</a>
+        </span>
+
+        <a href="/informes">Informes</a>
+      </div>
+
+      <!-- DERECHA -->
+      <div class="nav-right">
+        <form th:action="@{/logout}" method="post">
+          <button type="submit" class="logout-btn">🔄 Cambiar usuario</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,271 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Informe</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      .content {
+        padding: 20px;
+        background: #f5f6fa;
+      }
+
+      /* CABECERA */
+      .header {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        margin-bottom: 10px;
+      }
+
+      .info p {
+        margin: 5px 0;
+      }
+
+      .estado {
+        font-weight: bold;
+      }
+
+      .activo {
+        color: #e67e22;
+      }
+
+      .finalizado {
+        color: #27ae60;
+      }
+
+      /* BOTÓN ESTADO */
+      .btn-estado {
+        margin-top: 10px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-finalizar {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-reabrir {
+        background: #ffc107;
+      }
+
+      /* TARJETAS */
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      /* TABLA */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background: #f4f4f4;
+      }
+
+      tr:hover {
+        background: #f9f9f9;
+      }
+
+      /* BOTONES */
+      .acciones {
+        margin-top: 15px;
+      }
+
+      .btn-pdf {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .btn-volver {
+        background: #7f8c8d;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="content">
+      <!-- CABECERA -->
+      <div class="header">
+        <h2>
+          Informe Nº
+          <span th:text="${orden.id}"></span>
+        </h2>
+
+        <div class="info">
+          <p>
+            <b>Cliente:</b>
+            <span th:text="${orden.cliente}"></span>
+          </p>
+
+          <p>
+            <b>Vehículo:</b>
+            <span th:text="${orden.marcaVehiculo}"></span>
+            <span th:text="${orden.modeloVehiculo}"></span>
+          </p>
+
+          <p>
+            <b>Matrícula:</b>
+            <span th:text="${orden.matricula}"></span>
+          </p>
+
+          <p>
+            <b>Bastidor:</b>
+            <span th:text="${orden.bastidor}"></span>
+          </p>
+
+          <p>
+            <b>Estado:</b>
+
+            <span
+              th:text="${orden.finalizado} ? 'FINALIZADO' : 'ACTIVO'"
+              th:classappend="${orden.finalizado} ? 'finalizado estado' : 'activo estado'"
+            >
+            </span>
+          </p>
+        </div>
+
+        <!-- BOTÓN ESTADO -->
+        <form
+          th:action="@{/informes/{id}/estado(id=${orden.id})}"
+          method="post"
+        >
+          <button
+            type="submit"
+            class="btn-estado"
+            th:classappend="${orden.finalizado} ? 'btn-reabrir' : 'btn-finalizar'"
+          >
+            <span
+              th:text="${orden.finalizado} ? 'Reabrir informe' : 'Finalizar informe'"
+            >
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <!-- PROCESOS -->
+      <div class="card">
+        <h3>Parte de procesos</h3>
+
+        <table>
+          <tr>
+            <th>Fecha</th>
+            <th>Operario</th>
+            <th>Proceso</th>
+            <th>Horas</th>
+          </tr>
+
+          <tr th:each="p : ${procesos}">
+            <td th:text="${p.fecha}"></td>
+
+            <td th:text="${p.operario}"></td>
+
+            <td th:text="${p.descripcion}"></td>
+
+            <td th:text="${p.horas}"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- MATERIALES MANUALES -->
+      <div class="card">
+        <h3>Parte de materiales</h3>
+
+        <table>
+          <tr>
+            <th>Fecha</th>
+            <th>Operario</th>
+            <th>Material</th>
+            <th>Unidades</th>
+          </tr>
+
+          <tr th:each="m : ${materialesManual}">
+            <td th:text="${m.fecha}"></td>
+
+            <td th:text="${m.operario}"></td>
+
+            <td th:text="${m.nombre}"></td>
+
+            <td th:text="${m.unidades}"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- INVENTARIO -->
+      <div class="card">
+        <h3>Material utilizado (inventario)</h3>
+
+        <table>
+          <tr>
+            <th>Producto</th>
+            <th>Proveedor</th>
+            <th>Cantidad</th>
+            <th>Precio unitario</th>
+            <th>Total</th>
+            <th>Descripción</th>
+          </tr>
+
+          <tr th:each="m : ${materiales}">
+            <td th:text="${m.productoProveedor.producto.nombre}"></td>
+
+            <td th:text="${m.productoProveedor.proveedor.nombre}"></td>
+
+            <td th:text="${m.cantidad}"></td>
+
+            <td th:text="${m.productoProveedor.precioVenta}"></td>
+
+            <td th:text="${m.productoProveedor.precioVenta * m.cantidad}"></td>
+
+            <td th:text="${m.descripcion}"></td>
+          </tr>
+        </table>
+
+        <div class="acciones">
+          <a th:href="@{/informes/{id}/pdf(id=${orden.id})}">
+            <button class="btn-pdf">📄 Exportar PDF</button>
+          </a>
+
+          <a href="/informes">
+            <button class="btn-volver">⬅ Volver</button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

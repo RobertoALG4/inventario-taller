@@ -1,0 +1,176 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Informes de trabajo</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      .content {
+        padding: 20px;
+      }
+
+      h2 {
+        margin-bottom: 15px;
+      }
+
+      .btn-nuevo {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-nuevo:hover {
+        background: #219150;
+      }
+
+      .buscador {
+        margin: 15px 0;
+      }
+
+      .buscador input {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-right: 10px;
+      }
+
+      .buscador button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background: #2980b9;
+        color: white;
+        cursor: pointer;
+      }
+
+      .buscador button:hover {
+        background: #1f6691;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+
+      th {
+        background: #f4f4f4;
+      }
+
+      tr:hover {
+        background: #f9f9f9;
+      }
+
+      .finalizado {
+        background: #d4edda;
+      }
+
+      .estado-activo {
+        color: #e67e22;
+        font-weight: bold;
+      }
+
+      .estado-finalizado {
+        color: #27ae60;
+        font-weight: bold;
+      }
+
+      .acciones a {
+        margin-right: 10px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .acciones a:first-child {
+        color: #2980b9;
+      }
+
+      .acciones a:last-child {
+        color: #f39c12;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="content">
+      <h2>Informes de trabajo</h2>
+
+      <a href="/informes/nuevo">
+        <button class="btn-nuevo">➕ Nuevo informe</button>
+      </a>
+
+      <form action="/informes/buscar" method="get" class="buscador">
+        <span>Buscar por matrícula o bastidor:</span>
+
+        <input type="text" name="busqueda" placeholder="1234ABC o bastidor" />
+
+        <button type="submit">Buscar</button>
+      </form>
+
+      <table>
+        <tr>
+          <th>Nº Orden</th>
+
+          <th>Matrícula / Bastidor</th>
+
+          <th>Descripción</th>
+
+          <th>Estado</th>
+
+          <th>Fecha</th>
+
+          <th>Acciones</th>
+        </tr>
+
+        <tr
+          th:each="o : ${ordenes}"
+          th:classappend="${o.finalizado} ? 'finalizado' : ''"
+        >
+          <td th:text="${o.id}"></td>
+
+          <td
+            th:text="${o.matricula != null && !#strings.isEmpty(o.matricula) ? o.matricula : o.bastidor}"
+          ></td>
+
+          <td th:text="${o.descripcionTrabajo}"></td>
+
+          <td
+            th:text="${o.finalizado} ? 'FINALIZADO' : 'ACTIVO'"
+            th:classappend="${o.finalizado} ? 'estado-finalizado' : 'estado-activo'"
+          ></td>
+
+          <td
+            th:text="${#temporals.format(o.fechaRecepcion,'dd/MM/yyyy')}"
+          ></td>
+          <td class="acciones">
+            <span sec:authorize="hasRole('OFICINA')">
+              <a th:href="@{/informes/{id}(id=${o.id})}"> Ver </a>
+
+              |
+            </span>
+
+            <a th:href="@{/informes/editar/{id}(id=${o.id})}"> Editar </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,363 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Informe</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      .wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+        background: #f5f6fa;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 900px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h3 {
+        margin-top: 25px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      label {
+        font-weight: bold;
+        margin-top: 10px;
+        display: block;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #eee;
+        padding: 8px;
+      }
+
+      th {
+        background: #f4f4f4;
+      }
+
+      .btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-add {
+        background: #2980b9;
+        color: white;
+        margin-top: 10px;
+      }
+
+      .btn-guardar {
+        background: #27ae60;
+        color: white;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      .btn-volver {
+        background: #7f8c8d;
+        color: white;
+        width: 100%;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="wrapper">
+      <div class="card">
+        <h2
+          th:text="${orden.id != null} ? 'Editar informe' : 'Nuevo informe'"
+        ></h2>
+
+        <form
+          th:action="@{/informes/guardar}"
+          method="post"
+          th:object="${orden}"
+        >
+          <input type="hidden" th:field="*{id}" />
+
+          <!-- DATOS VEHICULO -->
+
+          <h3>Datos vehículo</h3>
+
+          <div class="grid">
+            <div>
+              <label>Marca vehículo</label>
+              <input type="text" th:field="*{marcaVehiculo}" />
+            </div>
+
+            <div>
+              <label>Modelo / Color</label>
+              <input type="text" th:field="*{modeloVehiculo}" />
+            </div>
+
+            <div>
+              <label>Matrícula</label>
+              <input type="text" th:field="*{matricula}" />
+            </div>
+
+            <div>
+              <label>Bastidor</label>
+              <input type="text" th:field="*{bastidor}" />
+            </div>
+          </div>
+
+          <!-- CLIENTE -->
+
+          <h3>Cliente</h3>
+
+          <div class="grid">
+            <div>
+              <label>Cliente</label>
+              <input type="text" th:field="*{cliente}" />
+            </div>
+
+            <div>
+              <label>Domicilio</label>
+              <input type="text" name="domicilio" />
+            </div>
+
+            <div>
+              <label>Población</label>
+              <input type="text" name="poblacion" />
+            </div>
+
+            <div>
+              <label>DNI / CIF</label>
+              <input type="text" name="dni" />
+            </div>
+
+            <div>
+              <label>Teléfono</label>
+              <input type="text" name="telefono" />
+            </div>
+
+            <div>
+              <label>Fecha recepción</label>
+              <input type="date" th:field="*{fechaRecepcion}" />
+            </div>
+          </div>
+
+          <!-- DESCRIPCION -->
+
+          <h3>Descripción</h3>
+
+          <textarea th:field="*{descripcionTrabajo}"></textarea>
+
+          <!-- PROCESOS -->
+
+          <h3>Parte de procesos</h3>
+
+          <table id="tablaProcesos">
+            <tr>
+              <th>Fecha</th>
+
+              <th>Operario</th>
+
+              <th>Proceso</th>
+
+              <th>Horas</th>
+            </tr>
+
+            <!-- FILAS EXISTENTES -->
+            <tr th:each="p : ${procesos}">
+              <td>
+                <input type="date" name="procesosFecha" th:value="${p.fecha}" />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="procesosOperario"
+                  th:value="${p.operario}"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="procesosDescripcion"
+                  th:value="${p.descripcion}"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="number"
+                  step="0.5"
+                  name="procesosHoras"
+                  th:value="${p.horas}"
+                />
+              </td>
+            </tr>
+          </table>
+
+          <button type="button" class="btn btn-add" onclick="addProceso()">
+            + añadir línea
+          </button>
+
+          <!-- MATERIALES -->
+
+          <h3>Parte de materiales</h3>
+
+          <table id="tablaMateriales">
+            <tr>
+              <th>Fecha</th>
+
+              <th>Operario</th>
+
+              <th>Material</th>
+
+              <th>Unidades</th>
+            </tr>
+
+            <!-- FILAS EXISTENTES -->
+            <tr th:each="m : ${materialesManual}">
+              <td>
+                <input type="date" name="materialFecha" th:value="${m.fecha}" />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="materialOperario"
+                  th:value="${m.operario}"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="materialNombre"
+                  th:value="${m.nombre}"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  name="materialCantidad"
+                  th:value="${m.unidades}"
+                />
+              </td>
+            </tr>
+          </table>
+
+          <button type="button" class="btn btn-add" onclick="addMaterial()">
+            + añadir línea
+          </button>
+
+          <!-- BOTONES -->
+
+          <button class="btn btn-guardar">Guardar informe</button>
+
+          <a href="/informes">
+            <button type="button" class="btn btn-volver">Volver</button>
+          </a>
+        </form>
+      </div>
+    </div>
+
+    <!-- JS PARA AÑADIR FILAS -->
+
+    <script>
+      function addProceso() {
+        const tabla = document.getElementById("tablaProcesos");
+
+        const row = tabla.insertRow();
+
+        row.innerHTML = `
+
+<td>
+<input type="date" name="procesosFecha">
+</td>
+
+<td>
+<input type="text" name="procesosOperario">
+</td>
+
+<td>
+<input type="text" name="procesosDescripcion">
+</td>
+
+<td>
+<input type="number" step="0.5" name="procesosHoras">
+</td>
+
+`;
+      }
+
+      function addMaterial() {
+        const tabla = document.getElementById("tablaMateriales");
+
+        const row = tabla.insertRow();
+
+        row.innerHTML = `
+
+<td>
+<input type="date" name="materialFecha">
+</td>
+
+<td>
+<input type="text" name="materialOperario">
+</td>
+
+<td>
+<input type="text" name="materialNombre">
+</td>
+
+<td>
+<input type="text" name="materialCantidad">
+</td>
+
+`;
+      }
+    </script>
+  </body>
+</html>

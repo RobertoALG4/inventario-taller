@@ -1,0 +1,312 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Inventario</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      .content {
+        padding: 20px;
+      }
+
+      h2 {
+        margin-bottom: 15px;
+      }
+
+      /* BOTÓN NUEVO */
+      .btn-nuevo {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-nuevo:hover {
+        background: #219150;
+      }
+
+      /* BUSCADOR */
+      .buscador {
+        margin: 15px 0;
+      }
+
+      .buscador input {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-right: 10px;
+      }
+
+      .buscador button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background: #2980b9;
+        color: white;
+        cursor: pointer;
+      }
+
+      .buscador button:hover {
+        background: #1f6691;
+      }
+
+      /* TABLA */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+
+      th {
+        background: #f4f4f4;
+      }
+
+      tr:hover {
+        background: #f9f9f9;
+      }
+
+      /* ACCIONES */
+      .acciones a {
+        margin-right: 10px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .acciones a:first-child {
+        color: #2980b9;
+      }
+
+      .acciones a:last-child {
+        color: #e74c3c;
+      }
+
+      /* PAGINACIÓN */
+      .paginacion {
+        margin-top: 15px;
+      }
+
+      .paginacion a {
+        margin-right: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        color: #2980b9;
+      }
+
+      .paginacion a:hover {
+        text-decoration: underline;
+      }
+    </style>
+
+    <!-- JS NO TOCADO -->
+    <script>
+      function actualizarDatos(select) {
+        const productoId = select.dataset.productoId;
+        const proveedorId = select.value;
+
+        if (!proveedorId) {
+          fetch(`/api/productoProveedor/total?productoId=${productoId}`)
+            .then((r) => r.json())
+            .then((data) => {
+              document.getElementById("stock-" + productoId).innerText =
+                data.stock;
+              document.getElementById("precioCompra-" + productoId).innerText =
+                "-";
+              document.getElementById("precioVenta-" + productoId).innerText =
+                "-";
+              document.getElementById("ganancia-" + productoId).innerText = "-";
+              document.getElementById("valor-" + productoId).innerText =
+                data.valorTotal ?? "-";
+            });
+          return;
+        }
+
+        fetch(
+          `/api/productoProveedor?productoId=${productoId}&proveedorId=${proveedorId}`,
+        )
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("stock-" + productoId).innerText =
+              data.stock;
+            document.getElementById("precioCompra-" + productoId).innerText =
+              data.precioCompra;
+            document.getElementById("precioVenta-" + productoId).innerText =
+              data.precioVenta;
+            document.getElementById("ganancia-" + productoId).innerText =
+              data.porcentajeGanancia;
+            document.getElementById("valor-" + productoId).innerText =
+              data.stock * data.precioVenta;
+          });
+      }
+
+      function editarProducto(link) {
+        const productoId = link.dataset.productoId;
+        const select = document.querySelector(
+          `select[data-producto-id='${productoId}']`,
+        );
+        const proveedorId = select.value;
+
+        if (!proveedorId) {
+          alert("Selecciona un proveedor antes de editar");
+          return;
+        }
+
+        window.location.href = `/inventario/editar/${productoId}/${proveedorId}`;
+      }
+
+      function eliminarProducto(link) {
+        const productoId = link.dataset.productoId;
+        const select = document.querySelector(
+          `select[data-producto-id='${productoId}']`,
+        );
+        const proveedorId = select.value;
+
+        if (!proveedorId) {
+          alert("Selecciona un proveedor antes de eliminar");
+          return;
+        }
+
+        if (
+          confirm(
+            "¿Seguro que quieres eliminar este proveedor de este producto?",
+          )
+        ) {
+          window.location.href = `/inventario/eliminar/${productoId}/${proveedorId}`;
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div class="content">
+      <h2>Inventario</h2>
+
+      <a href="/inventario/nuevo">
+        <button class="btn-nuevo">➕ Nuevo producto</button>
+      </a>
+
+      <form th:action="@{/inventario}" method="get" class="buscador">
+        <input
+          type="text"
+          name="buscar"
+          placeholder="Buscar..."
+          th:value="${buscar}"
+        />
+        <button type="submit">Buscar</button>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Referencia</th>
+            <th>Proveedor</th>
+            <th>Stock</th>
+            <th>Precio compra</th>
+            <th>Precio venta</th>
+            <th>% añadido</th>
+            <th>Valor stock total</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr th:each="producto : ${productos}">
+            <td th:text="${producto.nombre}"></td>
+            <td th:text="${producto.referencia}"></td>
+
+            <td>
+              <select
+                th:attr="data-producto-id=${producto.id}"
+                onchange="actualizarDatos(this)"
+              >
+                <option value="">Todos</option>
+                <option
+                  th:each="pp : ${producto.productoProveedores}"
+                  th:value="${pp.proveedor.id}"
+                  th:text="${pp.proveedor.nombre}"
+                ></option>
+              </select>
+            </td>
+
+            <td
+              th:id="'stock-' + ${producto.id}"
+              th:text="${producto.stockTotal}"
+            ></td>
+
+            <td
+              th:id="'precioCompra-' + ${producto.id}"
+              th:text="${#lists.isEmpty(producto.productoProveedores) ? '-' : producto.productoProveedores.get(0).precioCompra}"
+            ></td>
+
+            <td
+              th:id="'precioVenta-' + ${producto.id}"
+              th:text="${#lists.isEmpty(producto.productoProveedores) ? '-' : producto.productoProveedores.get(0).precioVenta}"
+            ></td>
+
+            <td
+              th:id="'ganancia-' + ${producto.id}"
+              th:text="${#lists.isEmpty(producto.productoProveedores) ? '-' : producto.productoProveedores.get(0).porcentajeGanancia}"
+            ></td>
+
+            <td
+              th:id="'valor-' + ${producto.id}"
+              th:text="${producto.valorTotal}"
+            ></td>
+
+            <td class="acciones">
+              <a
+                href="#"
+                th:attr="data-producto-id=${producto.id}"
+                onclick="editarProducto(this)"
+                >✏ Editar</a
+              >
+              |
+              <a
+                href="#"
+                th:attr="data-producto-id=${producto.id}"
+                onclick="eliminarProducto(this)"
+                >🗑 Eliminar</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="paginacion">
+        <a
+          th:if="${currentPage > 0}"
+          th:href="@{/inventario(page=${currentPage - 1}, buscar=${buscar})}"
+        >
+          ⬅ Anterior
+        </a>
+
+        Página <span th:text="${currentPage + 1}"></span> de
+        <span th:text="${totalPages}"></span>
+
+        <a
+          th:if="${currentPage + 1 < totalPages}"
+          th:href="@{/inventario(page=${currentPage + 1}, buscar=${buscar})}"
+        >
+          Siguiente ➡
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

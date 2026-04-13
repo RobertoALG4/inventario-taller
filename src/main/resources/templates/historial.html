@@ -1,0 +1,207 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <title>Historial</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+    <style>
+      .content {
+        padding: 20px;
+      }
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      /* FILTRO */
+      .filtro {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .filtro input,
+      .filtro select {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-right: 10px;
+      }
+
+      .filtro button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background: #2980b9;
+        color: white;
+        cursor: pointer;
+      }
+
+      .filtro button:hover {
+        background: #1f6691;
+      }
+
+      /* BOTÓN PDF */
+      .btn-pdf {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background: #27ae60;
+        color: white;
+        cursor: pointer;
+        margin-bottom: 15px;
+      }
+
+      .btn-pdf:hover {
+        background: #1e8449;
+      }
+
+      /* TABLA */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+      }
+
+      th {
+        background: #f4f4f4;
+      }
+
+      tr:hover {
+        background: #f9f9f9;
+      }
+
+      /* PAGINACIÓN */
+      .paginacion {
+        margin-top: 15px;
+      }
+
+      .paginacion a {
+        margin-right: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        color: #2980b9;
+      }
+
+      .paginacion a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="content">
+      <h2>📜 Historial de movimientos</h2>
+
+      <!-- FILTRO -->
+      <form method="get" th:action="@{/historial}" class="filtro">
+        <input
+          type="text"
+          name="buscar"
+          placeholder="Buscar cliente, matrícula, producto..."
+          th:value="${buscar}"
+        />
+
+        <select name="tipo">
+          <option value="">Todos</option>
+
+          <option
+            value="ENTRADA"
+            th:selected="${tipoSeleccionado != null and tipoSeleccionado.name() == 'ENTRADA'}"
+          >
+            Entradas
+          </option>
+
+          <option
+            value="SALIDA"
+            th:selected="${tipoSeleccionado != null and tipoSeleccionado.name() == 'SALIDA'}"
+          >
+            Salidas
+          </option>
+        </select>
+
+        <input type="date" name="fechaInicio" th:value="${fechaInicio}" />
+        <input type="date" name="fechaFin" th:value="${fechaFin}" />
+
+        <button type="submit">Filtrar</button>
+
+        <!-- 🔥 BOTÓN RESET -->
+        <a th:href="@{/historial}">
+          <button type="button" style="background: #7f8c8d">
+            ❌ Limpiar filtros
+          </button>
+        </a>
+      </form>
+
+      <!-- 🆕 PDF -->
+      <form method="get" th:action="@{/historial/pdf}">
+        <input type="hidden" name="buscar" th:value="${buscar}" />
+
+        <!-- 🔥 IMPORTANTE -->
+        <input
+          type="hidden"
+          name="tipo"
+          th:value="${tipoSeleccionado != null ? tipoSeleccionado.name() : ''}"
+        />
+
+        <input type="hidden" name="fechaInicio" th:value="${fechaInicio}" />
+        <input type="hidden" name="fechaFin" th:value="${fechaFin}" />
+
+        <button type="submit" class="btn-pdf">📄 Exportar PDF</button>
+      </form>
+
+      <!-- TABLA -->
+      <table>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Producto</th>
+          <th>Proveedor</th>
+          <th>Cantidad</th>
+          <th>Cliente</th>
+          <th>Matrícula</th>
+          <th>Bastidor</th>
+          <th>Descripción</th>
+        </tr>
+
+        <tr th:each="m : ${movimientos}">
+          <!-- 🔥 FECHA CORREGIDA -->
+          <td th:text="${#temporals.format(m.fecha,'dd/MM/yy HH:mm')}"></td>
+          <td
+            th:text="${m.tipo}"
+            th:style="${m.tipo.name() == 'ENTRADA'} ? 
+            'color:green;font-weight:bold;' : 
+            'color:red;font-weight:bold;'"
+          ></td>
+
+          <td th:text="${m.productoProveedor.producto.nombre}"></td>
+          <td th:text="${m.productoProveedor.proveedor.nombre}"></td>
+
+          <td
+            th:text="${m.tipo.name() == 'SALIDA' ? '-' + m.cantidad : '+' + m.cantidad}"
+          ></td>
+
+          <td th:text="${m.cliente} ?: '-'"></td>
+          <td th:text="${m.matricula} ?: '-'"></td>
+          <td th:text="${m.bastidor} ?: '-'"></td>
+          <td th:text="${m.descripcion} ?: '-'"></td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
